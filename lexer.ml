@@ -72,4 +72,85 @@ let re_whitespace = Str.regexp "[ \t\n]+";;
 
 (* Part 1: Lexer - IMPLEMENT YOUR CODE BELOW *)
 
-let tokenize input = raise (InvalidInputException "")
+let tokenize input =
+  let rec tok pos s =
+    if pos >= String.length s then
+      []
+    else
+      if Str.string_match re_whitespace s pos then
+        tok (Str.match_end ()) s
+
+      else if Str.string_match re_double_semi s pos then
+        Tok_DoubleSemi :: tok (Str.match_end ()) s
+      else if Str.string_match re_greater_equal s pos then
+        Tok_GreaterEqual :: tok (Str.match_end ()) s
+      else if Str.string_match re_less_equal s pos then
+        Tok_LessEqual :: tok (Str.match_end ()) s
+      else if Str.string_match re_not_equal s pos then
+        Tok_NotEqual :: tok (Str.match_end ()) s
+      else if Str.string_match re_or s pos then
+        Tok_Or :: tok (Str.match_end ()) s
+      else if Str.string_match re_and s pos then
+        Tok_And :: tok (Str.match_end ()) s
+      else if Str.string_match re_arrow s pos then
+        Tok_Arrow :: tok (Str.match_end ()) s
+
+      else if Str.string_match re_neg_int s pos then
+        let matched = Str.matched_string s in
+        let num_str = String.sub matched 1 (String.length matched - 2) in
+        let num = int_of_string num_str in
+        Tok_Int num :: tok (Str.match_end ()) s
+
+      else if Str.string_match re_pos_int s pos then
+        let matched = Str.matched_string s in
+        let num = int_of_string matched in
+        Tok_Int num :: tok (Str.match_end ()) s
+
+      else if Str.string_match re_string s pos then
+        let matched = Str.matched_string s in
+        let str_content = String.sub matched 1 (String.length matched - 2) in
+        Tok_String str_content :: tok (Str.match_end ()) s
+
+      else if Str.string_match re_id s pos then
+        let matched = Str.matched_string s in
+        let token = match matched with
+          | "let" -> Tok_Let
+          | "rec" -> Tok_Rec
+          | "in" -> Tok_In
+          | "fun" -> Tok_Fun
+          | "if" -> Tok_If
+          | "then" -> Tok_Then
+          | "else" -> Tok_Else
+          | "not" -> Tok_Not
+          | "true" -> Tok_Bool true
+          | "false" -> Tok_Bool false
+          | "def" -> Tok_Def
+          | id -> Tok_ID id  
+        in
+        token :: tok (Str.match_end ()) s
+
+      else if Str.string_match re_lparen s pos then
+        Tok_LParen :: tok (Str.match_end ()) s
+      else if Str.string_match re_rparen s pos then
+        Tok_RParen :: tok (Str.match_end ()) s
+      else if Str.string_match re_equal s pos then
+        Tok_Equal :: tok (Str.match_end ()) s
+      else if Str.string_match re_greater s pos then
+        Tok_Greater :: tok (Str.match_end ()) s
+      else if Str.string_match re_less s pos then
+        Tok_Less :: tok (Str.match_end ()) s
+      else if Str.string_match re_add s pos then
+        Tok_Add :: tok (Str.match_end ()) s
+      else if Str.string_match re_sub s pos then
+        Tok_Sub :: tok (Str.match_end ()) s
+      else if Str.string_match re_mult s pos then
+        Tok_Mult :: tok (Str.match_end ()) s
+      else if Str.string_match re_div s pos then
+        Tok_Div :: tok (Str.match_end ()) s
+      else if Str.string_match re_concat s pos then
+        Tok_Concat :: tok (Str.match_end ()) s
+
+      else
+        raise (InvalidInputException ("Unexpected character at position " ^ string_of_int pos))
+  in
+  tok 0 input
